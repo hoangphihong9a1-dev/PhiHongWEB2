@@ -1,0 +1,32 @@
+# Root .gitignore for Microservices Project
+
+# Build artifacts
+target/
+bin/
+*.class
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+.metadata/
+
+# Node.js
+client/node_modules/
+client/dist/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
