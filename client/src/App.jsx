@@ -5,6 +5,7 @@ import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import AIChatBox from './components/AIChatBox';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -71,6 +72,7 @@ function App() {
               </Route>
             </Routes>
             <Footer />
+            <AIChatBox />
           </BrowserRouter>
         </CartProvider>
       </ToastProvider>
