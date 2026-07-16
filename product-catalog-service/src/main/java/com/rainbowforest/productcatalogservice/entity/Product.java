@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 @Entity
 @Table (name = "products")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Product {
+public class Product implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -33,8 +34,9 @@ public class Product {
     @NotNull
     private int availability;
 
-    @Column (name = "image_url")
+    @Column (name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
+
 
 	public Product() {
 

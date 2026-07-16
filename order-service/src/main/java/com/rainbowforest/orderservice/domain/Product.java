@@ -16,9 +16,16 @@ public class Product {
     @Column (name = "product_name")
     @NotNull
     private String productName;
+    
     @Column (name = "price")
     @NotNull
     private BigDecimal price;
+
+    @Column (name = "category")
+    private String category;
+
+    @Column (name = "image_url", columnDefinition = "LONGTEXT")
+    private String imageUrl;
 
     public Long getId() {
         return id;
@@ -42,5 +49,21 @@ public class Product {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

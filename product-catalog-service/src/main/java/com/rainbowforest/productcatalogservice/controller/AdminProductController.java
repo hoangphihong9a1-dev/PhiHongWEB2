@@ -40,6 +40,29 @@ public class AdminProductController {
     			HttpStatus.BAD_REQUEST);       
     }
     
+    @PutMapping(value = "/products/{id}")
+    private ResponseEntity<Product> updateProduct(@PathVariable("id") Long id, @RequestBody Product product){
+        Product existingProduct = productService.getProductById(id);
+        if(existingProduct != null) {
+            try {
+                product.setId(id);
+                productService.addProduct(product);
+                return new ResponseEntity<Product>(
+                        product,
+                        headerGenerator.getHeadersForSuccessGetMethod(),
+                        HttpStatus.OK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<Product>(
+                        headerGenerator.getHeadersForError(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        return new ResponseEntity<Product>(
+                headerGenerator.getHeadersForError(),
+                HttpStatus.NOT_FOUND);
+    }
+
     @DeleteMapping(value = "/products/{id}")
     private ResponseEntity<Void> deleteProduct(@PathVariable("id") Long id){
     	Product product = productService.getProductById(id);

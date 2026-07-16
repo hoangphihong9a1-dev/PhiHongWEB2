@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { createOrder } from '../api/api';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Package, Shield, Truck } from 'lucide-react';
+import { createOrder, createVNPayPayment } from '../api/api';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Package, Shield, Truck, CreditCard } from 'lucide-react';
 
 export default function CartPage() {
   const { cartItems, cartCount, total, addItem, removeItem, clearCart, cartId } = useCart();
@@ -11,6 +11,7 @@ export default function CartPage() {
   const navigate = useNavigate();
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderMsg, setOrderMsg] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('COD'); // 'COD' or 'VNPAY'
 
   const handleCheckout = async () => {
     if (!isLoggedIn) {
@@ -20,10 +21,22 @@ export default function CartPage() {
     setOrderLoading(true);
     setOrderMsg('');
     try {
-      await createOrder(user.id, cartId);
+      const res = await createOrder(user.id, cartId);
+      const createdOrder = res.data;
       clearCart();
-      setOrderMsg('✓ Đặt hàng thành công! Cảm ơn bạn đã mua sắm.');
-    } catch {
+      if (paymentMethod === 'VNPAY') {
+        setOrderMsg('✓ Đang chuyển hướng sang cổng thanh toán VNPAY...');
+        const paymentRes = await createVNPayPayment(createdOrder.id);
+        if (paymentRes.data && paymentRes.data.paymentUrl) {
+          window.location.href = paymentRes.data.paymentUrl;
+        } else {
+          setOrderMsg('✗ Không thể khởi tạo link thanh toán VNPAY. Vui lòng thanh toán tại danh sách đơn hàng.');
+        }
+      } else {
+        setOrderMsg('✓ Đặt hàng thành công! Cảm ơn bạn đã mua sắm.');
+      }
+    } catch (err) {
+      console.error(err);
       setOrderMsg('✗ Đặt hàng thất bại. Vui lòng thử lại.');
     } finally {
       setOrderLoading(false);
@@ -92,7 +105,7 @@ export default function CartPage() {
                   <div className="cart-item-info">
                     <span className="badge badge-primary" style={{ marginBottom: '0.5rem' }}>{item.product.category}</span>
                     <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>{item.product.productName}</h3>
-                    <p className="cart-item-price" style={{ fontSize: '1.1rem' }}>${Number(item.product.price).toFixed(2)} <span className="text-muted" style={{ fontSize: '0.9rem', fontWeight: 400 }}>/ sản phẩm</span></p>
+                    <p className="cart-item-price" style={{ fontSize: '1.1rem' }}>{Number(item.product.price).toLocaleString('vi-VN')} đ <span className="text-muted" style={{ fontSize: '0.9rem', fontWeight: 400 }}>/ sản phẩm</span></p>
                   </div>
 
                   <div className="cart-item-qty" style={{ padding: '0.5rem 0.75rem' }}>
@@ -116,7 +129,7 @@ export default function CartPage() {
 
                   <div className="cart-item-subtotal" style={{ minWidth: '120px' }}>
                     <span style={{ fontSize: '0.85rem', display: 'block', color: 'var(--text-muted)', fontWeight: 500 }}>Thành tiền</span>
-                    <span style={{ fontSize: '1.4rem', color: 'var(--primary)' }}>${(Number(item.subTotal) || 0).toFixed(2)}</span>
+                    <span style={{ fontSize: '1.4rem', color: 'var(--primary)' }}>{(Number(item.subTotal) || 0).toLocaleString('vi-VN')} đ</span>
                   </div>
 
                   <button className="cart-item-remove" onClick={() => removeItem(item.product.id)} style={{ padding: '0.75rem' }}>
@@ -135,7 +148,7 @@ export default function CartPage() {
           <div className="summary-details" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div className="summary-row">
               <span>Tạm tính ({cartCount} món)</span>
-              <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>${total.toFixed(2)}</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{total.toLocaleString('vi-VN')} đ</span>
             </div>
             <div className="summary-row">
               <span>Phí vận chuyển</span>
@@ -143,15 +156,66 @@ export default function CartPage() {
             </div>
             <div className="summary-row">
               <span>Giảm giá</span>
-              <span style={{ fontWeight: 700 }}>$0.00</span>
+              <span style={{ fontWeight: 700 }}>0 đ</span>
             </div>
             
             <div className="summary-total" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '2px solid var(--bg-soft)' }}>
               <div className="flex-between">
                 <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>Tổng thanh toán</span>
-                <span style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--primary)' }}>${total.toFixed(2)}</span>
+                <span style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--primary)' }}>{total.toLocaleString('vi-VN')} đ</span>
               </div>
               <p className="text-muted" style={{ fontSize: '0.8rem', textAlign: 'right', marginTop: '0.5rem' }}>(Đã bao gồm thuế VAT)</p>
+            </div>
+          </div>
+
+          {/* Payment Method Selector */}
+          <div className="payment-selector" style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)' }}>Phương thức thanh toán</span>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('COD')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.85rem',
+                  borderRadius: '0.75rem',
+                  border: paymentMethod === 'COD' ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  background: paymentMethod === 'COD' ? '#EEF2FF' : '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  color: paymentMethod === 'COD' ? 'var(--primary)' : 'var(--text-main)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <Truck size={16} /> COD (Giao hàng)
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('VNPAY')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.85rem',
+                  borderRadius: '0.75rem',
+                  border: paymentMethod === 'VNPAY' ? '2px solid var(--primary)' : '1px solid var(--border)',
+                  background: paymentMethod === 'VNPAY' ? '#EEF2FF' : '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  color: paymentMethod === 'VNPAY' ? 'var(--primary)' : 'var(--text-main)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <CreditCard size={16} /> Ví VNPAY
+              </button>
             </div>
           </div>
 

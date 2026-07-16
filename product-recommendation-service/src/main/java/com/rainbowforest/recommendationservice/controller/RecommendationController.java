@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 
 @RestController
 public class RecommendationController {
@@ -44,6 +46,8 @@ public class RecommendationController {
     }
     
     @PostMapping(value = "/{userId}/recommendations/{productId}")
+    @CircuitBreaker(name = "productServiceCB", fallbackMethod = "saveRecommendationsFallback")
+    @Retry(name = "productServiceRetry")
     private ResponseEntity<Recommendation> saveRecommendations(
             @PathVariable ("userId") Long userId,
             @PathVariable ("productId") Long productId,
@@ -74,6 +78,17 @@ public class RecommendationController {
         return new ResponseEntity<Recommendation>(
         		headerGenerator.getHeadersForError(),
         		HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<Recommendation> saveRecommendationsFallback(
+            Long userId,
+            Long productId,
+            int rating,
+            HttpServletRequest request,
+            Throwable t) {
+        return new ResponseEntity<Recommendation>(
+                headerGenerator.getHeadersForError(),
+                HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @DeleteMapping(value = "/recommendations/{id}")

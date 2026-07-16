@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import {
   ShoppingCart, Package, User, TrendingUp, Search, LogOut,
-  Menu, X, ChevronDown, LayoutDashboard
+  Menu, X, ChevronDown, LayoutDashboard, FileText
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -17,11 +17,6 @@ export default function Navbar() {
   const [dropOpen, setDropOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Hide navbar on admin routes
-  if (location.pathname.startsWith('/admin')) {
-    return null;
-  }
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -31,6 +26,11 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Hide navbar on admin routes
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -77,6 +77,10 @@ export default function Navbar() {
             <Package size={18} />
             <span>Sản phẩm</span>
           </Link>
+          <Link to="/articles" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <FileText size={18} />
+            <span>Bài viết</span>
+          </Link>
 
           <Link to="/cart" className="nav-link cart-link" onClick={() => setMenuOpen(false)}>
             <div className="cart-icon-wrapper">
@@ -110,6 +114,9 @@ export default function Navbar() {
                   )}
                   <Link to="/orders" className="dropdown-item" onClick={() => setDropOpen(false)}>
                     <Package size={16} /> Đơn hàng của tôi
+                  </Link>
+                  <Link to="/profile" className="dropdown-item" onClick={() => setDropOpen(false)}>
+                    <User size={16} /> Hồ sơ cá nhân
                   </Link>
                   <div className="dropdown-divider"></div>
                   <button className="dropdown-item logout-btn" onClick={handleLogout}>

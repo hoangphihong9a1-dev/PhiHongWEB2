@@ -100,7 +100,7 @@ export default function ProductDetailPage() {
 
           <p className="product-description">{product.discription}</p>
           
-          <div className="product-price">${Number(product.price).toFixed(2)}</div>
+          <div className="product-price">{Number(product.price).toLocaleString('vi-VN')} đ</div>
 
           <div className={`product-availability ${product.availability ? 'in-stock' : 'out-stock'}`}>
             {product.availability ? '✓ Còn hàng' : '✗ Hết hàng'}

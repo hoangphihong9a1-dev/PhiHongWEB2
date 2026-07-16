@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserByName } from '../api/api';
+import { loginUser } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { ShieldCheck, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
@@ -21,38 +21,36 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await getUserByName(form.userName);
-      const userResponse = res.data;
-      const userData = Array.isArray(userResponse) ? userResponse[0] : userResponse;
+      const res = await loginUser({
+        username: form.userName,
+        password: form.userPassword
+      });
+      const loginResponse = res.data;
+      
+      const userData = {
+        id: loginResponse.userId,
+        userName: form.userName,
+        role: {
+          roleName: loginResponse.role
+        },
+        accessToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken
+      };
 
-      if (userData && String(userData.userPassword) === String(form.userPassword)) {
-        const roleName = userData.role?.roleName || '';
-        if (roleName.toUpperCase() === 'ROLE_ADMIN' || userData.userName === 'admin') {
-          login(userData);
-          navigate('/admin', { replace: true });
-        } else {
-          setError('Tài khoản này không có quyền truy cập trang quản trị.');
-        }
+      const roleName = userData.role?.roleName || '';
+      if (roleName.toUpperCase() === 'ROLE_ADMIN' || userData.userName === 'admin') {
+        login(userData);
+        navigate('/admin', { replace: true });
       } else {
-        setError('Tên đăng nhập hoặc mật khẩu quản trị không đúng.');
+        setError('Tài khoản này không có quyền truy cập trang quản trị.');
       }
     } catch (err) {
       console.error('Admin Login error:', err);
-      const msg = err.response?.data?.message || err.message;
-      setError(`Lỗi hệ thống: ${msg}. Thử nút Đăng nhập nhanh nếu backend chưa sẵn sàng.`);
+      const msg = err.response?.data?.message || err.response?.data || err.message;
+      setError(`Đăng nhập quản trị thất bại: ${msg}`);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAdminBypass = () => {
-    const adminUser = {
-      id: 2,
-      userName: 'admin',
-      role: { roleName: 'ROLE_ADMIN' }
-    };
-    login(adminUser);
-    navigate('/admin', { replace: true });
   };
 
   return (
@@ -101,16 +99,6 @@ export default function AdminLoginPage() {
             {loading ? 'Đang xác thực...' : 'Đăng nhập hệ thống'}
           </button>
         </form>
-
-        <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-           <button 
-             onClick={handleAdminBypass}
-             className="btn btn-outline btn-sm" 
-             style={{ width: '100%', fontSize: '0.85rem' }}
-           >
-             Đăng nhập nhanh Admin (Bypass)
-           </button>
-         </div>
 
         <button 
           onClick={() => navigate('/')} 

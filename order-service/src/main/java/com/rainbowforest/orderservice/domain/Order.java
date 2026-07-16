@@ -31,9 +31,42 @@ public class Order {
     @ManyToOne (cascade = CascadeType.MERGE)
     @JoinColumn (name = "user_id")
     private User user;
+
+    @Column (name = "shipping_name")
+    private String shippingName;
+
+    @Column (name = "shipping_phone")
+    private String shippingPhone;
+
+    @Column (name = "shipping_address")
+    private String shippingAddress;
     
 	public Order() {
 		
+	}
+
+	public String getShippingName() {
+		return shippingName;
+	}
+
+	public void setShippingName(String shippingName) {
+		this.shippingName = shippingName;
+	}
+
+	public String getShippingPhone() {
+		return shippingPhone;
+	}
+
+	public void setShippingPhone(String shippingPhone) {
+		this.shippingPhone = shippingPhone;
+	}
+
+	public String getShippingAddress() {
+		return shippingAddress;
+	}
+
+	public void setShippingAddress(String shippingAddress) {
+		this.shippingAddress = shippingAddress;
 	}
 
 	public Long getId() {

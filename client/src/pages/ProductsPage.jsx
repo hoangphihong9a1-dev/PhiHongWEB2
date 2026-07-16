@@ -4,8 +4,6 @@ import { getProducts, getProductsByCategory, getProductsByName } from '../api/ap
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Star, Filter, Package, Search } from 'lucide-react';
 
-const CATEGORIES = ['All', 'Electronics', 'Accessories', 'Displays', 'Audio', 'Smart Home'];
-
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +13,18 @@ export default function ProductsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nameParam = searchParams.get('name');
+
+  // Load custom categories from local storage
+  let customCats = [];
+  try {
+    const stored = localStorage.getItem('rf_custom_categories');
+    if (stored) {
+      customCats = JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  const CATEGORIES = ['All', 'Electronics', 'Accessories', 'Displays', 'Audio', 'Smart Home', ...customCats];
 
   useEffect(() => {
     setLoading(true);
@@ -98,7 +108,7 @@ export default function ProductsPage() {
                 <h3 className="card-title">{product.productName}</h3>
                 <p className="card-desc">{product.discription}</p>
                 <div className="card-footer">
-                  <span className="card-price">${Number(product.price).toFixed(2)}</span>
+                  <span className="card-price">{Number(product.price).toLocaleString('vi-VN')} đ</span>
                   <button
                     className={`btn btn-primary btn-sm ${addedId === product.id ? 'btn-success' : ''}`}
                     onClick={(e) => handleAddToCart(e, product)}

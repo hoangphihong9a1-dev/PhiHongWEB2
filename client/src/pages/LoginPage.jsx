@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { getUserByName } from '../api/api';
+import { loginUser } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 
@@ -38,28 +38,31 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const res = await getUserByName(form.userName);
-      const userResponse = res.data;
-
-      // Handle cases where backend might return an array
-      const userData = Array.isArray(userResponse) ? userResponse[0] : userResponse;
-
-      if (userData && String(userData.userPassword) === String(form.userPassword)) {
-        login(userData);
-        if (userData.role?.roleName === 'ROLE_ADMIN' || userData.userName === 'admin') {
-          navigate('/admin', { replace: true });
-        } else {
-          // If they were trying to reach admin but logged in as user, send to home
-          const target = from.startsWith('/admin') ? '/' : from;
-          navigate(target, { replace: true });
-        }
+      const res = await loginUser({
+        username: form.userName,
+        password: form.userPassword
+      });
+      const loginResponse = res.data;
+      const userData = {
+        id: loginResponse.userId,
+        userName: form.userName,
+        role: {
+          roleName: loginResponse.role
+        },
+        accessToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken
+      };
+      login(userData);
+      if (userData.role?.roleName === 'ROLE_ADMIN' || userData.userName === 'admin') {
+        navigate('/admin', { replace: true });
       } else {
-        setError('Tên đăng nhập hoặc mật khẩu không đúng.');
+        const target = from.startsWith('/admin') ? '/' : from;
+        navigate(target, { replace: true });
       }
     } catch (err) {
       console.error('Login error:', err);
-      const msg = err.response?.data?.message || err.message;
-      setError(`Lỗi kết nối Backend: ${msg}. Vui lòng kiểm tra user-service.`);
+      const msg = err.response?.data?.message || err.response?.data || err.message;
+      setError(`Đăng nhập thất bại: ${msg}`);
     } finally {
       setLoading(false);
     }

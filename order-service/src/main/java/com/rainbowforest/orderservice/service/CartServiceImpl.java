@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+
 @Service
 public class CartServiceImpl implements CartService {
 
@@ -19,9 +22,20 @@ public class CartServiceImpl implements CartService {
     private CartRedisRepository cartRedisRepository;
 
     @Override
+    @CircuitBreaker(name = "productServiceCB", fallbackMethod = "addItemToCartFallback")
+    @Retry(name = "productServiceRetry")
     public void addItemToCart(String cartId, Long productId, Integer quantity) {
         Product product = productClient.getProductById(productId);
         Item item = new Item(quantity,product, CartUtilities.getSubTotalForItem(product,quantity));
+        cartRedisRepository.addItemToCart(cartId, item);
+    }
+
+    public void addItemToCartFallback(String cartId, Long productId, Integer quantity, Throwable t) {
+        Product fallbackProduct = new Product();
+        fallbackProduct.setId(productId);
+        fallbackProduct.setProductName("Catalog Service Unavailable (Fallback)");
+        fallbackProduct.setPrice(java.math.BigDecimal.ZERO);
+        Item item = new Item(quantity, fallbackProduct, java.math.BigDecimal.ZERO);
         cartRedisRepository.addItemToCart(cartId, item);
     }
 

@@ -4,8 +4,10 @@ import { getProducts, getProductsByCategory } from '../api/api';
 import { useCart } from '../context/CartContext';
 import {
   ShoppingCart, Package, Star, TrendingUp, Shield, Truck, Headphones,
-  ArrowRight, Zap,
+  ArrowRight, Zap, FileText
 } from 'lucide-react';
+import { MOCK_ARTICLES } from './ArticlesPage';
+import heroImg from '../assets/hero.png';
 
 const FEATURES = [
   { icon: <Truck size={32} />, title: 'Miễn phí vận chuyển', desc: 'Cho đơn hàng trên 500.000đ' },
@@ -66,13 +68,16 @@ export default function HomePage() {
           </div>
           <div className="hero-visual">
             <div className="hero-orb" />
-            <div className="hero-card floating">
-              <div style={{ background: 'var(--primary-light)', padding: '1.5rem', borderRadius: '1.5rem', color: 'var(--primary)', marginBottom: '1rem' }}>
-                <Package size={48} />
+            <img src={heroImg} alt="Futuristic Tech Products" className="hero-banner-img" />
+            <div className="hero-floating-card">
+              <div className="flex-center icon-box">
+                <Package size={24} />
               </div>
-              <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem' }}>Premium Products</h3>
-              <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                {[1,2,3,4,5].map(s => <Star key={s} size={16} fill="var(--warning)" color="var(--warning)" />)}
+              <div>
+                <h4>Premium Products</h4>
+                <div style={{ display: 'flex', gap: '0.2rem' }}>
+                  {[1,2,3,4,5].map(s => <Star key={s} size={12} fill="var(--warning)" color="var(--warning)" />)}
+                </div>
               </div>
             </div>
           </div>
@@ -121,7 +126,7 @@ export default function HomePage() {
                     <h3 className="card-title">{product.productName}</h3>
                     <p className="card-desc" style={{ marginBottom: '1.5rem' }}>{product.discription}</p>
                     <div className="flex-between">
-                      <span className="card-price">${Number(product.price).toFixed(2)}</span>
+                      <span className="card-price">{Number(product.price).toLocaleString('vi-VN')} đ</span>
                       <button
                         className={`btn btn-primary btn-sm ${addedId === product.id ? 'btn-success' : ''}`}
                         onClick={(e) => handleAddToCart(e, product)}
@@ -159,7 +164,7 @@ export default function HomePage() {
                   <div className="card-body">
                     <h3 className="card-title">{product.productName}</h3>
                     <div className="flex-between" style={{ marginTop: '1rem' }}>
-                      <span className="card-price">${Number(product.price).toFixed(2)}</span>
+                      <span className="card-price">{Number(product.price).toLocaleString('vi-VN')} đ</span>
                       <button
                         className={`btn btn-primary btn-sm ${addedId === product.id ? 'btn-success' : ''}`}
                         onClick={(e) => handleAddToCart(e, product)}
@@ -174,6 +179,58 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Blog/Articles Section */}
+      <section className="section" style={{ background: '#ffffff' }}>
+        <div className="container">
+          <div className="section-header flex-between">
+            <h2 className="section-title">
+              <FileText size={24} style={{ color: 'var(--primary)', marginRight: '0.5rem' }} /> 
+              Góc tư vấn & Tin tức công nghệ
+            </h2>
+            <Link to="/articles" className="btn btn-outline btn-sm">Xem tất cả bài viết <ArrowRight size={16} /></Link>
+          </div>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+            {MOCK_ARTICLES.slice(0, 3).map(art => (
+              <div 
+                key={art.id} 
+                onClick={() => navigate(`/articles/${art.id}`)}
+                style={{
+                  background: 'var(--bg-card)',
+                  borderRadius: '1.25rem',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-sm)',
+                  border: '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+                className="article-card-home"
+              >
+                <div style={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
+                  <img src={art.imageUrl} alt={art.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span className="category-badge" style={{ position: 'absolute', top: '1rem', left: '1rem' }}>{art.category}</span>
+                </div>
+                <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.8rem', lineHeight: 1.4, height: '3.1rem', overflow: 'hidden', color: 'var(--text)' }}>{art.title}</h3>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.5rem', flexGrow: 1, height: '2.7rem', overflow: 'hidden' }}>{art.summary}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem' }}>
+                    Đọc chi tiết <ArrowRight size={14} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <style>{`
+          .article-card-home:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md) !important;
+            border-color: var(--primary-light) !important;
+          }
+        `}</style>
+      </section>
 
       {/* CTA */}
       <section className="section">

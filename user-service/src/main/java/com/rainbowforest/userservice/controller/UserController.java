@@ -76,4 +76,40 @@ public class UserController {
 		}
     	return new ResponseEntity<User>(HttpStatus.BAD_REQUEST);
     }
+
+    @PutMapping(value = "/users/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable("id") Long id, @RequestBody User user){
+        try {
+            User updated = userService.updateUser(id, user);
+            return new ResponseEntity<User>(
+                    updated,
+                    headerGenerator.getHeadersForSuccessGetMethod(),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<String>(
+                    e.getMessage(),
+                    headerGenerator.getHeadersForError(),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping(value = "/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id){
+        User user = userService.getUserById(id);
+        if(user != null) {
+            try {
+                userService.deleteUser(id);
+                return new ResponseEntity<Void>(
+                        headerGenerator.getHeadersForSuccessGetMethod(),
+                        HttpStatus.OK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<Void>(
+                        headerGenerator.getHeadersForError(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        return new ResponseEntity<Void>(headerGenerator.getHeadersForError(), HttpStatus.NOT_FOUND);
+    }
 }

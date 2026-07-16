@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { addToCart, removeFromCart, getCart, clearCartApi } from '../api/api';
+import { useToast } from './ToastContext';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
+  const { showToast } = useToast();
   // cartId = session identifier sent in Cart-Id header
   const [cartId] = useState(() => {
     const saved = localStorage.getItem('cartId');
@@ -46,6 +48,9 @@ export function CartProvider({ children }) {
       return [...prev, { product, quantity, subTotal: quantity * Number(product.price) }];
     });
     setCartCount((c) => c + quantity);
+    
+    // Show success notification toast
+    showToast(`Đã thêm ${product.productName} vào giỏ hàng!`, 'success');
 
     // 2. Sync with backend in background
     try {

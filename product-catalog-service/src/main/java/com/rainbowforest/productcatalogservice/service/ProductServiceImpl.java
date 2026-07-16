@@ -15,6 +15,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
 
     @Override
+    @org.springframework.cache.annotation.Cacheable(value = "products_all")
     public List<Product> getAllProduct() {
         return productRepository.findAll();
     }
@@ -25,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @org.springframework.cache.annotation.Cacheable(value = "products", key = "#id")
     public Product getProductById(Long id) {
         return productRepository.getOne(id);
     }
@@ -35,11 +37,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = {"products", "products_all"}, allEntries = true)
     public Product addProduct(Product product) {
         return productRepository.save(product);
     }
 
     @Override
+    @org.springframework.cache.annotation.CacheEvict(value = {"products", "products_all"}, allEntries = true)
     public void deleteProduct(Long productId) {
         productRepository.deleteById(productId);
     }

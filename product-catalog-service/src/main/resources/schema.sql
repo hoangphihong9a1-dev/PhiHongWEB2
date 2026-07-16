@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS products (
     discription VARCHAR(255),
     category VARCHAR(255) NOT NULL,
     availability INT NOT NULL,
-    image_url VARCHAR(255)
+    image_url LONGTEXT
 );

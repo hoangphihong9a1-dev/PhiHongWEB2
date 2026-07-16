@@ -15,6 +15,7 @@ import java.util.Arrays;
 @SpringBootApplication
 @EnableEurekaClient
 @EnableJpaRepositories
+@org.springframework.cache.annotation.EnableCaching
 public class ProductCatalogServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProductCatalogServiceApplication.class, args);
