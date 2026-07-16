@@ -35,6 +35,15 @@ export function CartProvider({ children }) {
   }, [cartId]);
 
   const addItem = useCallback(async (product, quantity = 1) => {
+    const currentItem = cartItems.find((i) => i.product.id === product.id);
+    const currentQty = currentItem ? currentItem.quantity : 0;
+    const stock = typeof product.availability === 'number' ? product.availability : 999;
+
+    if (quantity > 0 && currentQty + quantity > stock) {
+      showToast(`Không thể thêm! Số lượng trong giỏ (${currentQty + quantity}) vượt quá số lượng tồn kho (${stock}).`, 'error');
+      return false;
+    }
+
     // 1. Update UI immediately (Optimistic Update)
     setCartItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
@@ -63,9 +72,9 @@ export function CartProvider({ children }) {
       }
     } catch (err) {
       console.error('Failed to sync cart with backend:', err);
-      // Optional: rollback or show error if critical
     }
-  }, [cartId]);
+    return true;
+  }, [cartId, cartItems, showToast]);
 
   const removeItem = useCallback(async (productId) => {
     // 1. Update UI immediately

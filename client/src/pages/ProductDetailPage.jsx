@@ -33,10 +33,12 @@ export default function ProductDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleAddToCart = () => {
-    addItem(product, quantity);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
+  const handleAddToCart = async () => {
+    const success = await addItem(product, quantity);
+    if (success) {
+      setAdded(true);
+      setTimeout(() => setAdded(false), 1500);
+    }
   };
 
   const handleSubmitRating = async () => {
@@ -112,7 +114,7 @@ export default function ProductDetailPage() {
             <div className="quantity-control">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
               <span>{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)}>+</button>
+              <button onClick={() => setQuantity(Math.min(product.availability || 999, quantity + 1))}>+</button>
             </div>
           </div>
 
